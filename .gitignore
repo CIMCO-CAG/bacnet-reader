@@ -5,3 +5,5 @@ YABE idea
 *.dll
 Controller Objects.csv
 *~
+venv/
+bn.py
