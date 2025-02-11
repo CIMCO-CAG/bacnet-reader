@@ -447,7 +447,7 @@ def read_items_from_file(file_path):
 def write_items_to_file(file_path, items):
     with open(file_path, 'w') as file:
         for item in items:
-            file.write(item + '\n' + '\r')
+            file.write(item + '\r' + '\n')
             
 # Function to delete selected items from the listbox and update the file
 def delete_selected_items():
@@ -592,7 +592,7 @@ def append_to_file():
     # Append to translate.ini
     with open(translate_file, 'a') as file:
         for obj in selected_objects:
-            line = f'{obj.deviceID}.{obj.objectIdentifier}={obj.objectName}\n \r'
+            line = f'{obj.deviceID}.{obj.objectIdentifier}={obj.objectName}\r\n'
             file.write(line)
 
     # Append to tags.txt
@@ -602,7 +602,7 @@ def append_to_file():
                 symbol = 'BOOL'
             else:
                 symbol = '%'
-            line = f'{obj.deviceID}.{obj.objectIdentifier},{symbol},{obj.objectName}\n \r'
+            line = f'{obj.deviceID}.{obj.objectIdentifier},{symbol},{obj.objectName}\r\n'
             file.write(line)
 
     tkinter.messagebox.showinfo(title='Info', message='Data has been appended to the files.')
@@ -873,10 +873,10 @@ def save_to_files_thread():
     # Create translate.ini
     translate_file_path = os.path.join(default_folder, 'translate.ini')
     with open(translate_file_path, 'wb') as file:
-        file.write(b'[translate]\n\r')
+        file.write(b'[translate]\r\n')
         for obj in selected_objects:
             # Correctly access the deviceID property
-            line = f'{obj.deviceID}.{obj.objectIdentifier}={obj.objectName}\n\r'
+            line = f'{obj.deviceID}.{obj.objectIdentifier}={obj.objectName}\r\n'
             file.write(line.encode())
 
     # Create tags.txt
@@ -888,7 +888,7 @@ def save_to_files_thread():
             else:
                 symbol = '%'
             # Correctly access the deviceID property
-            line = f'{obj.deviceID}.{obj.objectIdentifier},{symbol},{obj.objectName}\n\r'
+            line = f'{obj.deviceID}.{obj.objectIdentifier},{symbol},{obj.objectName}\r\n'
             saved_objects.append(f'{obj.deviceID}.{obj.objectIdentifier},{symbol},{obj.objectName}')
             file.write(line.encode())
     tkinter.messagebox.showinfo(title='Info',message='File has been saved.')
