@@ -308,7 +308,7 @@ type_listbox.select_set(0,5)
 def read_objects_chunk(mac, device_id, object_chunk):
     global allowed_types
     allowed_types = {
-        'analogValue', 'binaryValue', 'analogInput','binaryInput' 'analogOutput','binaryOutput', 'multiStateValue', 'multiStateInput', 'multiStateOutput'
+        'analogValue', 'binaryValue', 'analogInput', 'binaryInput', 'analogOutput', 'binaryOutput', 'multiStateValue', 'multiStateInput', 'multiStateOutput'
     }
     bacnet_objects = [
         BacnetObject(mac, obj[0], obj[1], device_id)
