@@ -590,20 +590,20 @@ def append_to_file():
         return
 
     # Append to translate.ini
-    with open(translate_file, 'a') as file:
+    with open(translate_file, 'ab') as file:
         for obj in selected_objects:
             line = f'{obj.deviceID}.{obj.objectIdentifier}={obj.objectName}\r\n'
-            file.write(line)
+            file.write(line.encode())
 
     # Append to tags.txt
-    with open(tags_file, 'a') as file:
+    with open(tags_file, 'ab') as file:
         for obj in selected_objects:
             if obj.objectType == 'binaryValue':
                 symbol = 'BOOL'
             else:
                 symbol = '%'
             line = f'{obj.deviceID}.{obj.objectIdentifier},{symbol},{obj.objectName}\r\n'
-            file.write(line)
+            file.write(line.encode())
 
     tkinter.messagebox.showinfo(title='Info', message='Data has been appended to the files.')
     update_comparison_listbox()
