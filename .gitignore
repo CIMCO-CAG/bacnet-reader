@@ -9,3 +9,6 @@ venv/
 bn.py
 tags.txt
 translate.ini
+build/
+dist/
+*.spec
