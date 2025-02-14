@@ -741,8 +741,13 @@ def show_information_window():
     info_text.config(state='disabled')  # Make the text widget read-only
     info_text.pack(fill='both', expand=True)
     
-# Open the image file with PIL
-info_img = Image.open('icons/info.png')
+# Open the image file with PIL.
+# Two directories, because images are put in different directory when the script
+# is compiled to an executable.
+try:
+    info_img = Image.open('icons/info.png')
+except:
+    info_img = Image.open('_internal/icons/info.png')
 
 # Resize the image with PIL
 info_img = info_img.resize((20,20))
@@ -758,7 +763,11 @@ folder_button_ttp = tt.CreateToolTip(info_button, \
     "Application Info.")
         
 # Open the image file with PIL
-folder_img = Image.open('icons/folder.png')
+try:
+    folder_img = Image.open('icons/folder.png')
+except:
+    folder_img = Image.open('_internal/icons/folder.png')
+
 
 # Resize the image with PIL
 folder_img = folder_img.resize((25, 25))
