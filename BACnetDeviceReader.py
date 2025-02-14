@@ -1,4 +1,4 @@
-import os
+import os, sys
 import csv
 import BAC0
 #may need to install this as well: pyasynchat, pytz
@@ -103,7 +103,7 @@ title_font = ("Open Sans", 10,"bold")
 seperator_font = ("Open Sans", 12,"bold") 
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
-center_x = int((screen_width - window_width) / 2)
+center_x = int((screen_width - window_width) / 3)
 center_y = int((screen_height - window_height) / 2)
 root.geometry(f"+{center_x}+{center_y}")
 
@@ -416,6 +416,7 @@ def change_Address():
         bacnet.disconnect()
         Network_Connect()
     except:
+        print("Exception in address change")
         pass
    
 # Button to change port number
@@ -625,7 +626,48 @@ def save_to_files():
     else:
         # Neither file exists
         threading.Thread(target=save_to_files_thread, daemon=True).start()
-        
+
+def create_debug_window():
+    global debug_window
+    debug_window = tk.Toplevel()
+    debug_window.title("Debug Information")
+
+    # Change the protocol for closing debug window to withdrawing it,
+    # instead of deleting the object
+    debug_window.protocol("WM_DELETE_WINDOW", debug_window.withdraw)
+
+    window_width = 800
+    window_height = 400
+    debug_window.geometry(f"{window_width}x{window_height}")
+
+    # Position the window on the screen in top right corner
+    screen_width = debug_window.winfo_screenwidth()
+    screen_height = debug_window.winfo_screenheight()
+    center_x = int((screen_width - window_width) * 7 / 8)
+    center_y = int((screen_height - window_height) * 1 / 8)
+    debug_window.geometry(f"+{center_x}+{center_y}")
+
+    # Set a modern look with light grey background color
+    debug_window.configure(bg='#f0f0f0')
+
+    # Create a frame for the content with padding for a cleaner look
+    content_frame = tk.Frame(debug_window, bg='#ffffff', padx=20, pady=20)
+    content_frame.pack(fill='both', expand=True)
+
+    # Add a label with a larger bold font for the title
+    title_label = tk.Label(content_frame, text="Debug Information", bg='#f0f0f0', fg='black', font=("Helvetica", 16, "bold"))
+    title_label.pack(pady=(0, 10))
+
+    # console_text is a reference for stdout.write decorator to use
+    global console_text
+    console_text = tk.Text(content_frame, width = 100)
+    console_text.pack()
+
+# Unlike with information window, we created in the very beginning, and hide it then,
+# and whenever user clicks to display it, we just show it, instead of recreating it.
+def show_debug_window():
+    debug_window.state('normal')
+
 def show_information_window():
     # Create a new top-level window
     info_window = tk.Toplevel()
@@ -708,7 +750,7 @@ info_img = info_img.resize((20,20))
 # Convert the PIL image object to a PhotoImage object
 info_img = ImageTk.PhotoImage(info_img)
 
-# Add the Save to Files button
+# Add the Information button
 info_button = ttk.Button(frame3,width=3,image=info_img, command=show_information_window)
 info_button.image = info_img
 info_button.grid(row=0,column=1, sticky=(tk.E,tk.N))
@@ -738,8 +780,13 @@ button_frame2.grid_columnconfigure(1, weight=1)
 button_frame2.grid_columnconfigure(2, weight=1)
 
 button_frame3 = ttk.Frame(frame3)
-button_frame3.grid(row=7, column=0,padx=(0, 10),pady=0, sticky=('WENS'))
+button_frame3.grid(row=7, column=0,padx=(0, 15),pady=0, sticky=('WENS'))
 button_frame3.grid_columnconfigure(0, weight=1)
+
+# Add the Debug button
+info_button = ttk.Button(button_frame3, text="Debug", command=show_debug_window)
+info_button.grid(row=0,column=1, sticky=('E'))
+folder_button_ttp = tt.CreateToolTip(info_button, "Debug Info.")
 
 # Add the Save to Files button
 folder_button = ttk.Button(button_frame1,image=folder_img, command=select_folder)
@@ -917,5 +964,25 @@ select_all_button.grid(row=0, column=1, padx=(5,10), sticky='WENS')
 select_all_button_ttp = tt.CreateToolTip(select_all_button, \
     "Deselect all objects.")
 
-root.after(100, Network_Connect)
+# Decorator to duplicate stdout in debug window on GUI
+def decorator(func):
+    def inner(inputStr):
+        try:
+            console_text.insert(tk.END, inputStr)
+            console_text.see('end')
+            return func(inputStr)
+        except:
+            return func(inputStr)
+    return inner
+
+# Create and immediately withdraw the debug window, so that debug output
+# can keep piling up for us to look in the future
+def debug_window_init():
+    create_debug_window()
+    debug_window.withdraw()
+    # The following line reassignes stdout.write to our decorator
+    sys.stdout.write = decorator(sys.stdout.write)
+
+root.after(100, debug_window_init)
+root.after(500, Network_Connect)
 root.mainloop()
