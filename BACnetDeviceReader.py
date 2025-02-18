@@ -6,6 +6,7 @@ import psutil
 import tkinter
 import threading
 import socket
+import logging
 import ToolTip as tt
 import tkinter as tk
 from tkinter import ttk
@@ -658,7 +659,7 @@ def create_debug_window():
     title_label = tk.Label(content_frame, text="Debug Information", bg='#f0f0f0', fg='black', font=("Helvetica", 16, "bold"))
     title_label.pack(pady=(0, 10))
 
-    # console_text is a reference for stdout.write decorator to use
+    # console_text is a reference for stdout.write overrider to use
     global console_text
     console_text = tk.Text(content_frame, width = 100)
     console_text.pack()
@@ -973,24 +974,29 @@ select_all_button.grid(row=0, column=1, padx=(5,10), sticky='WENS')
 select_all_button_ttp = tt.CreateToolTip(select_all_button, \
     "Deselect all objects.")
 
-# Decorator to duplicate stdout in debug window on GUI
-def decorator(func):
-    def inner(inputStr):
-        try:
-            console_text.insert(tk.END, inputStr)
-            console_text.see('end')
-            return func(inputStr)
-        except:
-            return func(inputStr)
-    return inner
+# Stdout-like class to redirect stdout to debug window on GUI
+class Mystdout:
+    def __init__(self):
+        pass
+
+    def write(self, inputStr):
+        console_text.insert(tk.END, inputStr)
+        console_text.see('end')
+
+    def flush(self):
+        pass
 
 # Create and immediately withdraw the debug window, so that debug output
 # can keep piling up for us to look in the future
 def debug_window_init():
     create_debug_window()
     debug_window.withdraw()
-    # The following line reassignes stdout.write to our decorator
-    sys.stdout.write = decorator(sys.stdout.write)
+    # The following line reassigns stdout to our stdout-like class
+    sys.stdout = Mystdout()
+    # Also redirect all the output from modules that use "logging" module
+    logging.basicConfig(stream=mstdout)
+    # BAC0 is very verbose in DEBUG, so disable it
+    logging.disable(level=logging.DEBUG)
 
 root.after(100, debug_window_init)
 root.after(500, Network_Connect)
