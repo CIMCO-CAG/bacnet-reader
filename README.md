@@ -19,7 +19,7 @@ python BACnetDeviceReader.py
 Features lookup of BACnet devices and objects on these devices, and allows the user to save the objects in tags.txt and translate.txt formats.
 
 ## Issues
-As part of this application, I had to modify the BAC0 library. Modified file is tracked in this repository under 
+As part of this application, I had to modify the BAC0 library. Modified file is tracked in this repository under
 ```bash
 venv/Lib/site-packages/BAC0/tasks/TaskManager.py
 ```

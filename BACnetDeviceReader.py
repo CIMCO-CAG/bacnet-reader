@@ -49,7 +49,7 @@ class BacnetObject:
             raw_identifier = bacnet.read(f'{self.mac} {self.objectType} {self.objectValue} objectIdentifier')
             self._objectIdentifier = self._format_identifier(raw_identifier)
         return self._objectIdentifier
-    
+
     @property
     def status(self):
         if self._status is None:
@@ -67,7 +67,7 @@ class BacnetObject:
             except:
                 self._status = ""
         return self._status
-    
+
     @property
     def description(self):
         if self._description is None:
@@ -91,7 +91,7 @@ class BacnetObject:
         }
         type_abbr = type_to_abbr.get(type, type)
         return f'{type_abbr}{number}'
-   
+
 # GUI
 window_width = 950
 window_height = 750
@@ -101,7 +101,7 @@ root.geometry(f"{window_width}x{window_height}")
 root.configure(bg='light grey')  # Set the background color
 text_font = ("Open Sans", 10)
 title_font = ("Open Sans", 10,"bold")
-seperator_font = ("Open Sans", 12,"bold") 
+seperator_font = ("Open Sans", 12,"bold")
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 center_x = int((screen_width - window_width) / 3)
@@ -140,7 +140,7 @@ def load_folder_location():
             return file.read().strip()  # Remove leading/trailing whitespace
     else:
         return None
- 
+
 print("Wi-Fi IPv4 Address: ", WiFi)
 print("Ethernet IPv4 Address: ", Ethernet)
 
@@ -203,7 +203,7 @@ device_label.grid(row=8, column=0, padx=(0, 10), sticky=(tk.W, tk.E))
 
 device_var = tk.StringVar(root)
 device_var.set('Select Device')  # Set default value
-device_menu = ttk.Combobox(frame1, textvariable=device_var, values=devices, width=25,font=text_font) 
+device_menu = ttk.Combobox(frame1, textvariable=device_var, values=devices, width=25,font=text_font)
 device_menu.grid(row=9, column=0, padx=(0, 10), sticky=(tk.W, tk.E))
 
 space1_label = ttk.Label(frame1, text="----------------------------------------",font=seperator_font)
@@ -343,7 +343,7 @@ def read_objects_for_device(mac, device_id):
         loading_label.config(text="")
         loading_label.update()
         print(f"Error reading objects for device {device_id}: {e}")
-        
+
 def Network_Connect():
     def connect_and_discover():
         loading_label.config(text="Loading Devices...")
@@ -393,7 +393,7 @@ def Network_Connect():
             pass
 
     threading.Thread(target=connect_and_discover).start()
-           
+
 # Function to change port number
 def change_port():
     type_listbox.select_set(0,5)
@@ -419,7 +419,7 @@ def change_Address():
     except:
         print("Exception in address change")
         pass
-   
+
 # Button to change port number
 change_port_button = ttk.Button(frame1, text="Change Port", command=change_port)
 change_port_button.grid(row=6, column=0, pady=(10, 0),padx=(0, 10), sticky=('WENS'))
@@ -450,7 +450,7 @@ def write_items_to_file(file_path, items):
     with open(file_path, 'w') as file:
         for item in items:
             file.write(item + '\r' + '\n')
-            
+
 # Function to delete selected items from the listbox and update the file
 def delete_selected_items():
     selected_indices = comparison_listbox.curselection()
@@ -459,14 +459,14 @@ def delete_selected_items():
         for index in reversed(selected_indices):
             del items[index]
         write_items_to_file(tags_file_path, items)
-        
+
         items = read_items_from_file(translate_file_path)
         for index in reversed(selected_indices):
             del items[index+1]
         write_items_to_file(translate_file_path, items)
-        
+
         update_comparison_listbox()
-            
+
 def update_comparison_listbox():
     comparison_listbox.delete(0, tk.END)
     items = read_items_from_file(tags_file_path)
@@ -488,11 +488,11 @@ def update_object_listbox(event):
         if item not in filtered_objects:
             index = object_listbox.get(0, tk.END).index(item)
             object_listbox.delete(index)
-                  
+
     for item in filtered_objects:
         if item not in displayed_items:
             object_listbox.insert(tk.END, item)
-    
+
     object_listbox.select_set(0, tk.END)
 
 def update_device(event):
@@ -529,9 +529,9 @@ def update_device(event):
                         loading_label.update()
                         hide_loading_popup()
                     break
-        
+
     threading.Thread(target=load_objects).start()
-    
+
 # Bind the update_device function to the Combobox selection event
 device_menu.bind("<<ComboboxSelected>>", update_device)
 type_listbox.bind("<<ListboxSelect>>", update_object_listbox)
@@ -557,7 +557,7 @@ def select_folder():
     global shortened_folder
     # Use a Tkinter dialog to select a folder
     folder = filedialog.askdirectory(initialdir=default_folder)
-    
+
     # If a folder was selected, update the default folder
     if folder:
         save_folder_location(folder)
@@ -565,7 +565,7 @@ def select_folder():
         tags_file_path = f'{default_folder}/tags.txt'
         translate_file_path = f'{default_folder}/translate.ini'
         tkinter.messagebox.showinfo(title='Info',message=f"You have selected folder: {default_folder}")
-        
+
         # Split the path using '/' as delimiter
         try:
             folders = default_folder.split('/')
@@ -681,36 +681,36 @@ def show_information_window():
     # Create a new top-level window
     info_window = tk.Toplevel()
     info_window.title("Application Information")
-    
+
     # Set the size of the window
     window_width = 600
     window_height = 500
     info_window.geometry(f"{window_width}x{window_height}")
-    
+
     # Center the window on the screen
     screen_width = info_window.winfo_screenwidth()
     screen_height = info_window.winfo_screenheight()
     center_x = int((screen_width - window_width) / 2)
     center_y = int((screen_height - window_height) / 2)
     info_window.geometry(f"+{center_x}+{center_y}")
-    
+
     # Set a modern look with light grey background color
     info_window.configure(bg='#f0f0f0')
-    
+
     # Create a frame for the content with padding for a cleaner look
     content_frame = tk.Frame(info_window, bg='#f0f0f0', padx=20, pady=20)
     content_frame.pack(fill='both', expand=True)
-    
+
     # Add a label with a larger bold font for the title
     title_label = tk.Label(content_frame, text="Application Information", bg='#f0f0f0', fg='black', font=("Helvetica", 16, "bold"))
     title_label.pack(pady=(0, 10))
-        
+
     info_text = tk.Text(content_frame, wrap='word', bg='#ffffff', fg='black', bd=0, highlightthickness=0, font=("Helvetica", 10))
     info_text.tag_configure('bold', font=('Helvetica', 10, 'bold'))
 
     info_text.insert(tk.END, "Welcome to the BACnet Device Reader!\n\n", 'bold')
     info_text.insert(tk.END, "This application allows you to manage BACnet objects efficiently. Here are the key functionalities:\n\n")
-    
+
     info_text.insert(tk.END, "Load BACnet Devices: ", 'bold')
     info_text.insert(tk.END, "Connect to the BACnet network and discover devices through Ethernet or Wi-Fi.\n\n")
 
@@ -719,38 +719,38 @@ def show_information_window():
 
     info_text.insert(tk.END, "Filter Objects: ", 'bold')
     info_text.insert(tk.END, "Use the Object Type Selection to choose what objects will show in the Object Display.\n\n")
-    
+
     info_text.insert(tk.END, "Select Objects: ", 'bold')
     info_text.insert(tk.END, "Use the Select All button to select all objects on device.\n\n")
-    
+
     info_text.insert(tk.END, "Deselect Objects: ", 'bold')
     info_text.insert(tk.END, "Use the Deselect All button to deselect all objects.\n\n")
-    
+
     info_text.insert(tk.END, "Save File: ", 'bold')
     info_text.insert(tk.END, "Use the Save File button to save all selected objects to a new tags.txt and translate.ini file in the currently selected folder.\n\n")
-    
+
     info_text.insert(tk.END, "Append File: ", 'bold')
     info_text.insert(tk.END, "Use the Append File button to save all selected objects to tags.txt and translate.ini file in the currently selected folder.\n\n")
-    
+
     info_text.insert(tk.END, "Select Folder: ", 'bold')
     info_text.insert(tk.END, "Use the Folder button to choose which folder location the application will read/write from.\n\n")
-    
+
     info_text.insert(tk.END, "Load Tags File: ", 'bold')
     info_text.insert(tk.END, "Use the Load Tags File button to populate the list with contents from any tags.txt file.\n\n")
-    
+
     info_text.insert(tk.END, "Remove Objects(s): ", 'bold')
     info_text.insert(tk.END, "Use the Remove Object(s) button to delete the selected objects from tags.txt and translate.ini files.\n\n")
-    
+
     info_text.insert(tk.END, "Write Objects to CSV: ", 'bold')
     info_text.insert(tk.END, "Use the Write Objects to CSV button to save all device objects to a CSV file in the currently selected folder. Similar to PDB Extractor.\n\n")
-    
+
     info_text.insert(tk.END, "Use the tooltips on buttons for more instructions.\n\n", 'bold')
     info_text.insert(tk.END, "Enjoy managing your BACnet objects with ease!\n", 'bold')
 
     info_text.config(state='disabled')  # Make the text widget read-only
     info_text.pack(fill='both', expand=True)
 
-def resource_path(relative_path): 
+def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
     except Exception:
@@ -778,7 +778,7 @@ info_button.image = info_img
 info_button.grid(row=0,column=1, sticky=(tk.E,tk.N))
 folder_button_ttp = tt.CreateToolTip(info_button, \
     "Application Info.")
-        
+
 # Open the image file with PIL
 try:
     folder_img = Image.open(resource_path('folder.png'))
@@ -838,22 +838,22 @@ remove_button_ttp = tt.CreateToolTip(remove_button, \
 
 def compare_files():
     global file_path
-    
+
     # Open a file dialog to select the tags.txt file
     file_path = filedialog.askopenfilename(initialdir=default_folder, filetypes=[("Text files", "*.txt")])
-    
+
     # Check if a file was selected
     if file_path:
         # Clear the comparison listbox
         comparison_listbox.delete(0, tk.END)
-        
+
         # Open the file and read the objects
         with open(file_path, 'r') as file:
             reader = csv.reader(file, delimiter=',')
             for row in reader:
                 # Insert each object into the comparison listbox
                 comparison_listbox.insert(tk.END, f"{row[0]} - {row[2]}")
-        
+
 # Add the Compare Files button
 compare_button = ttk.Button(button_frame2, text="Load Tags File", command=compare_files)
 compare_button.grid(row=0, column=2,padx=(10,5), sticky='WENS')
@@ -896,7 +896,7 @@ def csv_read_objects_for_device(mac, device_id):
 
 def csv_writer_thread(all_objects):
     # Define headers for the CSV file
-    headers = ['Name', 'Object', 'ObjectType', 'Description', 'Value', 'Status'] 
+    headers = ['Name', 'Object', 'ObjectType', 'Description', 'Value', 'Status']
 
     # Write the collected objects to a CSV file
     csv_file = f"{default_folder}/Controller Objects.csv"
@@ -924,7 +924,7 @@ def objects_to_csv():
             csv_read_objects_for_device(mac, device_info[3])
             all_objects = extra_objects_for_device[mac]
             break
-    
+
     # Start the CSV writer in a new thread
     csv_thread = threading.Thread(target=csv_writer_thread, args=(all_objects,))
     csv_thread.start()
@@ -967,12 +967,12 @@ def save_to_files_thread():
     tkinter.messagebox.showinfo(title='Info',message='File has been saved.')
     print("save_to_files_thread finished")  # Debugging print statement
     update_comparison_listbox()
-    
+
 def select_all():
     type_listbox.select_set(0, tk.END)
     update_object_listbox(object_listbox)
     object_listbox.select_set(0, tk.END)
-  
+
 def deselect_all():
     type_listbox.select_set(0, tk.END)
     update_object_listbox(object_listbox)
