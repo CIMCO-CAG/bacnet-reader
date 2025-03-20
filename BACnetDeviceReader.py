@@ -537,14 +537,18 @@ device_menu.bind("<<ComboboxSelected>>", update_device)
 type_listbox.bind("<<ListboxSelect>>", update_object_listbox)
 
 # Initialize the default folder to the current directory
-folder_parts = default_folder.split(os.path.sep)
-shortened_folder = os.path.sep.join(folder_parts[-2:])
-shortened_folder = str(shortened_folder)
-if len(shortened_folder) > 50:
-    shortened_folder = "..." + shortened_folder[-47:]
-    shortened_folder = shortened_folder.split('/', 1)[-1]
-selected_folder_label = ttk.Label(frame3, text=f"Selected Folder: {os.path.sep}{shortened_folder}", justify='center', font=('Courier', 10), foreground='black')
-selected_folder_label.grid(row=8, column=0, sticky=('WENS'))
+try:
+    folder_parts = default_folder.split(os.path.sep)
+    shortened_folder = os.path.sep.join(folder_parts[-2:])
+    shortened_folder = str(shortened_folder)
+    if len(shortened_folder) > 50:
+        shortened_folder = "..." + shortened_folder[-47:]
+        shortened_folder = shortened_folder.split('/', 1)[-1]
+    selected_folder_label = ttk.Label(frame3, text=f"Selected Folder: {os.path.sep}{shortened_folder}", justify='center', font=('Courier', 10), foreground='black')
+    selected_folder_label.grid(row=8, column=0, sticky=('WENS'))
+except:
+    print('Failed to construct a folder path')
+    pass
 
 def select_folder():
     global default_folder  # Declare the variable as global at the beginning of the function
@@ -563,7 +567,11 @@ def select_folder():
         tkinter.messagebox.showinfo(title='Info',message=f"You have selected folder: {default_folder}")
         
         # Split the path using '/' as delimiter
-        folders = default_folder.split('/')
+        try:
+            folders = default_folder.split('/')
+        except:
+            print("Failed to update folder")
+            pass
 
         # Get the second last folder and last folder
         second_last_folder = folders[-2]
@@ -741,14 +749,22 @@ def show_information_window():
 
     info_text.config(state='disabled')  # Make the text widget read-only
     info_text.pack(fill='both', expand=True)
-    
+
+def resource_path(relative_path): 
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 # Open the image file with PIL.
 # Two directories, because images are put in different directory when the script
 # is compiled to an executable.
 try:
-    info_img = Image.open('icons/info.png')
+    info_img = Image.open(resource_path('info.png'))
 except:
-    info_img = Image.open('_internal/icons/info.png')
+    info_img = Image.open('icons/info.png')
 
 # Resize the image with PIL
 info_img = info_img.resize((20,20))
@@ -765,9 +781,9 @@ folder_button_ttp = tt.CreateToolTip(info_button, \
         
 # Open the image file with PIL
 try:
-    folder_img = Image.open('icons/folder.png')
+    folder_img = Image.open(resource_path('folder.png'))
 except:
-    folder_img = Image.open('_internal/icons/folder.png')
+    folder_img = Image.open('icons/folder.png')
 
 
 # Resize the image with PIL
@@ -992,7 +1008,8 @@ def debug_window_init():
     create_debug_window()
     debug_window.withdraw()
     # The following line reassigns stdout to our stdout-like class
-    sys.stdout = Mystdout()
+    mstdout = Mystdout()
+    sys.stdout = mstdout
     # Also redirect all the output from modules that use "logging" module
     logging.basicConfig(stream=mstdout)
     # BAC0 is very verbose in DEBUG, so disable it
