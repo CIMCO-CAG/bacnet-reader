@@ -14,6 +14,7 @@ from tkinter import filedialog
 from ttkthemes import ThemedTk
 from tkinter import messagebox
 from PIL import Image, ImageTk
+from idlelib.tooltip import Hovertip
 
 class BacnetObject:
     def __init__(self, mac, objectType, objectValue, deviceID):
@@ -547,13 +548,11 @@ type_listbox.bind("<<ListboxSelect>>", update_object_listbox)
 
 # Initialize the default folder to the current directory
 try:
-    folder_parts = default_folder.split(os.path.sep)
-    shortened_folder = os.path.sep.join(folder_parts[-2:])
-    shortened_folder = str(shortened_folder)
+    shortened_folder = default_folder
     if len(shortened_folder) > 50:
-        shortened_folder = "..." + shortened_folder[-47:]
-        shortened_folder = shortened_folder.split('/', 1)[-1]
-    selected_folder_label = ttk.Label(frame3, text=f"Selected Folder: {os.path.sep}{shortened_folder}", justify='center', font=('Courier', 10), foreground='black')
+        shortened_folder = ".../" + '/'.join(shortened_folder.split('/')[-2:])
+    selected_folder_label = ttk.Label(frame3, text=f"Selected Folder: {shortened_folder}", justify='center', font=('Courier', 10), foreground='black')
+    Hovertip(selected_folder_label, str(default_folder))
     selected_folder_label.grid(row=8, column=0, sticky=('WENS'))
 except:
     print('Failed to construct a folder path')
@@ -577,16 +576,15 @@ def select_folder():
 
         # Split the path using '/' as delimiter
         try:
-            folders = default_folder.split('/')
+            folder_to_display = default_folder
+            if len(folder_to_display) > 50:
+                folder_to_display = ".../" + '/'.join(folder_to_display.split('/')[-2:])
         except:
             print("Failed to update folder")
             pass
 
-        # Get the second last folder and last folder
-        second_last_folder = folders[-2]
-        last_folder = folders[-1]
-
-        selected_folder_label.configure(text=f"Selected Folder: .../{second_last_folder}/{last_folder}")
+        selected_folder_label.configure(text=f"Selected Folder: {folder_to_display}")
+        Hovertip(selected_folder_label, str(default_folder))
         selected_folder_label.update_idletasks()
 
     # Print the selected folder for debugging
