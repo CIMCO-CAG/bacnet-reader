@@ -6,9 +6,9 @@ YABE idea
 Controller Objects.csv
 *~
 venv/
-bn.py
 tags.txt
 translate.ini
+folder_location.txt
 build/
 dist/
 *.spec
