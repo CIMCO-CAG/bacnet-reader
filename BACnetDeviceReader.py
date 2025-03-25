@@ -676,9 +676,13 @@ def create_debug_window():
     title_label = tk.Label(content_frame, text="Debug Information", bg='#f0f0f0', fg='black', font=("Helvetica", 16, "bold"))
     title_label.pack(pady=(0, 10))
 
+    v=tk.Scrollbar(content_frame, orient='vertical')
+    v.pack(side=tk.RIGHT, fill='y')
+
     # console_text is a reference for stdout.write overrider to use
     global console_text
-    console_text = tk.Text(content_frame, width = 100)
+    console_text = tk.Text(content_frame, width = 100, yscrollcommand=v.set)
+    v.config(command=console_text.yview)
     console_text.pack()
 
 # Unlike with information window, we created in the very beginning, and hide it then,
