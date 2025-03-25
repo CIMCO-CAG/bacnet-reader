@@ -121,14 +121,25 @@ for adapter, addresses in addrs.items():
                 WiFi.append(f"{addr.address}")
 
 # Find Ethernet adapters and append to options_dict
-ethernet_count = 1
+ethernet_count = else_count = 1
+eth_found = False
 for adapter, addresses in addrs.items():
     if 'Ethernet' in adapter:
+        eth_found = True
         for addr in addresses:
             if addr.family == socket.AF_INET:
                 options_dict[f'Ethernet {ethernet_count} : {addr.address}'] = addr.address
                 Ethernet.append(f"{addr.address}")
                 ethernet_count += 1
+if not eth_found:
+    for adapter, addresses in addrs.items():
+        for addr in addresses:
+                if addr.family == socket.AF_INET:
+                    options_dict[f'IP {else_count} : {addr.address}'] = addr.address
+                    Ethernet.append(f"{addr.address}")
+                    else_count += 1
+    messagebox.showwarning(title="Warning", message="No adapter with 'Ethernet' in name was found. Displaying all IPs.")
+
 
 def save_folder_location(folder_location):
     with open("folder_location.txt", "w") as file:
@@ -353,35 +364,33 @@ def Network_Connect():
             try:
                 global bacnet
                 global all_devices
-
+                success = False
                 try:
                     bacnet = BAC0.connect(ip=Address, port=port)
+                    success = True
                 except Exception as e:
-                    if Address == Ethernet:
-                        bacnet = BAC0.connect(ip=WiFi, port=port)
-                        Address_entry.set(options[0])
-                    else:
-                        bacnet = BAC0.connect(ip=Ethernet, port=port)
-                        Address_entry.set(options[1])
+                    success = False
                     loading_label.config(text="")
                     loading_label.update()
                     print(f"Error connecting to BACnet network: {e}")
-                    messagebox.showerror(title="Error", message="Failed to connect to BACnet network.")
+                    messagebox.showerror(title="Error", message=
+"Could not connect to BACnet network. Please check that \
+no other BACnet application is using this IP address and port.")
 
-                bacnet.discover()
-                all_devices = bacnet.devices
+                if success:
+                    bacnet.discover()
+                    all_devices = bacnet.devices
 
-                if all_devices:
-                    print("Found BACnet devices:")
-                    loading_label.config(text="BACnet devices found.")
-                    loading_label.update()
-                    for idx, (a, b, mac, device_id) in enumerate(all_devices):
-                        print(f"Device {device_id} ({mac})")
-                else:
-                    loading_label.config(text="")
-                    loading_label.update()
-                    messagebox.showerror(title="Error", message="No BACnet devices found on this port and network.")
-
+                    if all_devices:
+                        print("Found BACnet devices:")
+                        loading_label.config(text="BACnet devices found.")
+                        loading_label.update()
+                        for idx, (a, b, mac, device_id) in enumerate(all_devices):
+                            print(f"Device {device_id} ({mac})")
+                    else:
+                        loading_label.config(text="")
+                        loading_label.update()
+                        messagebox.showerror(title="Error", message="No BACnet devices found on this port and network.")
                 devices = ['Show All Devices'] + [f'{device[0]} ({device[3]})' for device in bacnet.devices]
                 device_menu['values'] = devices
                 loading_label.config(text="")
