@@ -358,20 +358,25 @@ def read_objects_for_device(mac, device_id):
 
 def Network_Connect():
     def connect_and_discover():
-        loading_label.config(text="Loading Devices...")
-        loading_label.update()
+        global bacnet, all_devices, device_var, current_list
+        try:
+            devices = []
+            device_menu['values'] = devices
+            device_var.set('Select Device')
+            loading_label.config(text="Connecting to network...")
+            loading_label.update()
+        except Exception as e:
+            print(f'Exception while clearing the device drop-down: {e}')
         try:
             type_listbox.select_set(0, 5)
             try:
-                global bacnet
-                global all_devices
                 success = False
                 try:
                     bacnet = BAC0.connect(ip=Address, port=port)
                     success = True
                 except Exception as e:
                     success = False
-                    loading_label.config(text="")
+                    loading_label.config(text="Could not connect to BACnet network.")
                     loading_label.update()
                     print(f"Error connecting to BACnet network: {e}")
                     messagebox.showerror(title="Error", message=
@@ -379,8 +384,12 @@ def Network_Connect():
 no other BACnet application is using this IP address and port.")
 
                 if success:
+                    loading_label.config(text="Searching for devices...")
+                    loading_label.update()
                     bacnet.discover()
+                    bacnet.whois('100 10000')
                     all_devices = bacnet.devices
+                    print(f'All devices: {all_devices}')
 
                     if all_devices:
                         print("Found BACnet devices:")
@@ -388,14 +397,12 @@ no other BACnet application is using this IP address and port.")
                         loading_label.update()
                         for idx, (a, b, mac, device_id) in enumerate(all_devices):
                             print(f"Device {device_id} ({mac})")
+                        devices = ['Show All Devices'] + [f'{device[0]} ({device[3]})' for device in bacnet.devices]
+                        device_menu['values'] = devices
                     else:
-                        loading_label.config(text="")
+                        loading_label.config(text="No BACnet devices found.")
                         loading_label.update()
                         messagebox.showerror(title="Error", message="No BACnet devices found on this port and network.")
-                devices = ['Show All Devices'] + [f'{device[0]} ({device[3]})' for device in bacnet.devices]
-                device_menu['values'] = devices
-                loading_label.config(text="")
-                loading_label.update()
             except Exception as e:
                 print(f"An error occurred: {e}")
         except Exception as e:
@@ -413,7 +420,8 @@ def change_port():
         # Connect to the BACnet network
         bacnet.disconnect()
         Network_Connect()
-    except:
+    except Exception as e:
+        print(f"Exception in port change: {e}")
         pass
 
 # Function to change port number
@@ -426,8 +434,8 @@ def change_Address():
         # Connect to the BACnet network
         bacnet.disconnect()
         Network_Connect()
-    except:
-        print("Exception in address change")
+    except Exception as e:
+        print(f"Exception in address change: {e}")
         pass
 
 # Button to change port number
@@ -441,15 +449,6 @@ change_Address_button = ttk.Button(frame1, text="Change Address", command=change
 change_Address_button.grid(row=2, column=0, pady=(10, 0),padx=(0, 10), sticky=('WENS'))
 change_port_button_ttp = tt.CreateToolTip(change_Address_button, \
     "Changes address to Ethernet or Wi-Fi")
-
-def connect_device():
-    type_listbox.select_set(0,5)
-    try:
-        new_port = int(port_var.get())
-        # Here you can add the code to change the port number
-        print("Success", f"Port number changed to {new_port}")
-    except ValueError:
-        tkinter.messagebox.showerror(title="Error", message="No BACnet devices found on this port and network.")
 
 def read_items_from_file(file_path):
     with open(file_path, 'r') as file:
@@ -507,7 +506,7 @@ def update_object_listbox(event):
 
 def update_device(event):
     def load_objects():
-        loading_label.config(text="Loading Objects...")
+        loading_label.config(text="Loading objects...")
         loading_label.update()
         show_loading_popup()
         type_listbox.select_set(0, 5)
@@ -519,7 +518,6 @@ def update_device(event):
             update_object_listbox(object_listbox)
             loading_label.config(text="")
             loading_label.update()
-            hide_loading_popup()
         else:
             for device_info in all_devices:
                 device_name = f'{device_info[0]} ({device_info[3]})'
@@ -530,15 +528,16 @@ def update_device(event):
                         update_object_listbox(object_listbox)
                         loading_label.config(text="")
                         loading_label.update()
-                        hide_loading_popup()
                     else:
                         read_objects_for_device(mac, device_info[3])
                         current_list = objects_for_device[mac]
                         update_object_listbox(object_listbox)
                         loading_label.config(text="")
                         loading_label.update()
-                        hide_loading_popup()
                     break
+        hide_loading_popup()
+        loading_label.config(text="Finished loading objects.")
+        loading_label.update()
 
     threading.Thread(target=load_objects).start()
 
