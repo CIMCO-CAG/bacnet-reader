@@ -363,6 +363,7 @@ def Network_Connect():
             devices = []
             device_menu['values'] = devices
             device_var.set('Select Device')
+            clear_object_listbox()
             loading_label.config(text="Connecting to network...")
             loading_label.update()
         except Exception as e:
@@ -384,7 +385,7 @@ def Network_Connect():
 no other BACnet application is using this IP address and port.")
 
                 if success:
-                    loading_label.config(text="Searching for devices...")
+                    loading_label.config(text="Connected. Searching for devices...")
                     loading_label.update()
                     bacnet.discover()
                     bacnet.whois('100 10000')
@@ -504,8 +505,15 @@ def update_object_listbox(event):
 
     object_listbox.select_set(0, tk.END)
 
+def clear_object_listbox():
+    global object_listbox, current_list
+    current_list = []
+    object_listbox.delete(0, tk.END)
+
 def update_device(event):
     def load_objects():
+        change_Address_button.config(state=tk.DISABLED)
+        change_port_button.config(state=tk.DISABLED)
         loading_label.config(text="Loading objects...")
         loading_label.update()
         show_loading_popup()
@@ -538,6 +546,8 @@ def update_device(event):
         hide_loading_popup()
         loading_label.config(text="Finished loading objects.")
         loading_label.update()
+        change_Address_button.config(state=tk.NORMAL)
+        change_port_button.config(state=tk.NORMAL)
 
     threading.Thread(target=load_objects).start()
 
