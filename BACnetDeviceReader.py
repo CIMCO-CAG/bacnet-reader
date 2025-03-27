@@ -457,9 +457,9 @@ def read_items_from_file(file_path):
     return items
 
 def write_items_to_file(file_path, items):
-    with open(file_path, 'w') as file:
+    with open(file_path, 'wb') as file:
         for item in items:
-            file.write(item + '\r' + '\n')
+            file.write((f'{item}\r\n').encode())
 
 # Function to delete selected items from the listbox and update the file
 def delete_selected_items():
