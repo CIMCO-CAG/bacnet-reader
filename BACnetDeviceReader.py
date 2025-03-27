@@ -889,6 +889,7 @@ def csv_read_objects_chunk(mac, device_id, object_chunk):
     if mac not in extra_objects_for_device:
         extra_objects_for_device[mac] = []
     extra_objects_for_device[mac].extend(extra_bacnet_objects)
+
     for obj in extra_bacnet_objects:
         print(f"Loaded object: {obj.deviceID}.{obj.objectIdentifier} - {obj.objectName}")
 
@@ -898,6 +899,8 @@ def csv_read_objects_for_device(mac, device_id):
         object_list = bacnet.read(f'{mac} device {device_id} objectList')
         chunk_size = 10  # Define the chunk size
         threads = []
+        loading_label.config(text="Loading objecs for CSV...")
+        loading_label.update()
 
         for i in range(0, len(object_list), chunk_size):
             chunk = object_list[i:i + chunk_size]
@@ -914,40 +917,57 @@ def csv_read_objects_for_device(mac, device_id):
         loading_label.update()
         print(f"Error reading objects for device {device_id}: {e}")
 
-def csv_writer_thread(all_objects):
-    # Define headers for the CSV file
-    headers = ['Name', 'Object', 'ObjectType', 'Description', 'Value', 'Status']
-
-    # Write the collected objects to a CSV file
-    csv_file = f"{default_folder}/Controller Objects.csv"
-    with open(csv_file, 'w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(headers)  # Write headers
-        writer.writerows([[obj.objectName, obj.objectIdentifier, obj.objectType, obj.description, obj.presentValue, obj.status] for obj in all_objects])  # Write all collected objects
-
-    # Notify the user
-    tkinter.messagebox.showinfo(title='Info', message=f'Objects have been written to Controller Objects.csv.')
-    loading_label.config(text="")
-    loading_label.update()
-
 def objects_to_csv():
-    selected_device = device_var.get()
-    tkinter.messagebox.showinfo(title='Info', message=f'{selected_device} will be written to csv.')
-    loading_label.config(text="Loading CSV...")
-    loading_label.update()
-    print(f"selected_device: {selected_device}")
-    for device_info in all_devices:
-        device_name = f'{device_info[0]} ({device_info[3]})'
-        print(f"device_name: {device_name}")
-        if selected_device == device_name:
-            mac = device_info[2]
-            csv_read_objects_for_device(mac, device_info[3])
-            all_objects = extra_objects_for_device[mac]
-            break
+    def csv_writer_thread(all_objects):
+        loading_label.config(text="Writing objects to CSV file...")
+        loading_label.update()
+        # Define headers for the CSV file
+        headers = ['Name', 'Object', 'ObjectType', 'Description', 'Value', 'Status']
 
-    # Start the CSV writer in a new thread
-    csv_thread = threading.Thread(target=csv_writer_thread, args=(all_objects,))
-    csv_thread.start()
+        # Write the collected objects to a CSV file
+        try:
+            csv_file = f"{default_folder}/Controller Objects.csv"
+            with open(csv_file, 'w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(headers)  # Write headers
+                writer.writerows([[obj.objectName, obj.objectIdentifier, obj.objectType, obj.description, obj.presentValue, obj.status] for obj in all_objects])  # Write all collected objects
+        except Exception as e:
+            print(f'Exception writing to CSV: {e}')
+
+        # Notify the user
+        tkinter.messagebox.showinfo(title='Info', message=f'Objects have been written to Controller Objects.csv.')
+        loading_label.config(text="CSV file has been saved.")
+        loading_label.update()
+
+    def load_objects_csv():
+        global device_var, all_devices, extra_objects_for_device, loading_label
+        try:
+            selected_device = device_var.get()
+            #tkinter.messagebox.showinfo(title='Info', message=f'{selected_device} will be written to csv.')
+            loading_label.config(text="Loading object list for CSV...")
+            loading_label.update()
+            print(f"selected_device: {selected_device}")
+            all_objects = []
+            extra_objects_for_device.clear()
+        except Exception as e:
+            print(f'Exception while preparing for CSV write: {e}')
+        try:
+            for device_info in all_devices:
+                device_name = f'{device_info[0]} ({device_info[3]})'
+                print(f"device_name: {device_name}")
+                if selected_device == device_name:
+                    mac = device_info[2]
+                    csv_read_objects_for_device(mac, device_info[3])
+                    all_objects = extra_objects_for_device[mac]
+                    break
+        except Exception as e:
+            print(f'Exception while looking up the device: {e}')
+        print(f'Loaded {len(all_objects)} objects')
+        loading_label.config(text="Loaded all objects for CSV.")
+        loading_label.update()
+        csv_writer_thread(all_objects)
+
+    threading.Thread(target=load_objects_csv).start()
 
 csv_button = ttk.Button(button_frame3, text="Write Objects to CSV",command=objects_to_csv)
 csv_button.grid(row=0, column=0,padx=5, sticky=('WNS'))
