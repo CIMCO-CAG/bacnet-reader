@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, time
 import csv
 import BAC0
 #may need to install this as well: pyasynchat, pytz
@@ -151,6 +151,7 @@ default_folder = loaded_folder_location or os.getcwd()
 tags_file_path = f'{os.curdir}/tags.txt'
 translate_file_path = f'{os.curdir}/translate.ini'
 port = 47808
+bacnet = None
 all_objects = {}
 objects_for_device = {}
 extra_objects_for_device = {}
@@ -359,7 +360,13 @@ def Network_Connect():
             try:
                 success = False
                 try:
+                    bacnet.disconnect()
+                    time.sleep(0.3)
+                except:
+                    pass
+                try:
                     bacnet = BAC0.connect(ip=Address, port=port)
+                    time.sleep(0.3)
                     success = True
                 except Exception as e:
                     success = False
