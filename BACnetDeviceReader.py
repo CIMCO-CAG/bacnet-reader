@@ -361,7 +361,7 @@ def Network_Connect():
                 success = False
                 try:
                     bacnet.disconnect()
-                    time.sleep(0.3)
+                    time.sleep(0.8)
                 except:
                     pass
                 try:
