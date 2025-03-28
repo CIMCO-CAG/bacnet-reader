@@ -98,7 +98,7 @@ class BacnetObject:
 window_width = 950
 window_height = 750
 root = ThemedTk(theme="arc")
-root.title("BACnet Device Reader - v2024.07.30")
+root.title("BACnet Device Reader - v2025.03.28")
 root.geometry(f"{window_width}x{window_height}")
 root.configure(bg='light grey')  # Set the background color
 text_font = ("Open Sans", 10)
