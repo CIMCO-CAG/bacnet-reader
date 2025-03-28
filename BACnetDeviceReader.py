@@ -6,6 +6,7 @@ import psutil
 import tkinter
 import threading
 import socket
+import ipaddress
 import logging
 import ToolTip as tt
 import tkinter as tk
@@ -113,34 +114,17 @@ addrs = psutil.net_if_addrs()
 options_dict = {}
 WiFi = []
 Ethernet = []
+Broadcasts = {}
 
+ip_count = 1
 for adapter, addresses in addrs.items():
-    if 'Wi-Fi' in adapter:
-        for addr in addresses:
+    for addr in addresses:
             if addr.family == socket.AF_INET:
-                options_dict[f'Wi-Fi : {addr.address}'] = addr.address
-                WiFi.append(f"{addr.address}")
-
-# Find Ethernet adapters and append to options_dict
-ethernet_count = else_count = 1
-eth_found = False
-for adapter, addresses in addrs.items():
-    if 'Ethernet' in adapter:
-        eth_found = True
-        for addr in addresses:
-            if addr.family == socket.AF_INET:
-                options_dict[f'Ethernet {ethernet_count} : {addr.address}'] = addr.address
+                options_dict[f'IP {ip_count} : {addr.address}'] = addr.address
                 Ethernet.append(f"{addr.address}")
-                ethernet_count += 1
-if not eth_found:
-    for adapter, addresses in addrs.items():
-        for addr in addresses:
-                if addr.family == socket.AF_INET:
-                    options_dict[f'IP {else_count} : {addr.address}'] = addr.address
-                    Ethernet.append(f"{addr.address}")
-                    else_count += 1
-    messagebox.showwarning(title="Warning", message="No adapter with 'Ethernet' in name was found. Displaying all IPs.")
-
+                net = ipaddress.IPv4Network(addr.address + '/' + addr.netmask, False)
+                Broadcasts[addr.address] = str(net.broadcast_address)
+                ip_count += 1
 
 def save_folder_location(folder_location):
     with open("folder_location.txt", "w") as file:
@@ -251,7 +235,7 @@ options = list(options_dict.keys())  # Use the keys from the dictionary
 # Create a combobox with the options
 Address_entry = ttk.Combobox(frame1, textvariable=Address_var, values=options)
 # Set the default value to the first option
-Address_entry.set(options[1])
+Address_entry.set(options[0])
 # Configure the width of the combobox
 Address_entry.config(width=5)
 # Place the combobox on the grid
@@ -360,6 +344,8 @@ def Network_Connect():
     def connect_and_discover():
         global bacnet, all_devices, device_var, current_list
         try:
+            change_Address_button.config(state=tk.DISABLED)
+            change_port_button.config(state=tk.DISABLED)
             devices = []
             device_menu['values'] = devices
             device_var.set('Select Device')
@@ -388,7 +374,7 @@ no other BACnet application is using this IP address and port.")
                     loading_label.config(text="Connected. Searching for devices...")
                     loading_label.update()
                     bacnet.discover()
-                    bacnet.whois('100 10000')
+                    bacnet.whois(destination=Broadcasts[Address])
                     all_devices = bacnet.devices
                     print(f'All devices: {all_devices}')
 
@@ -404,6 +390,9 @@ no other BACnet application is using this IP address and port.")
                         loading_label.config(text="No BACnet devices found.")
                         loading_label.update()
                         messagebox.showerror(title="Error", message="No BACnet devices found on this port and network.")
+
+                change_Address_button.config(state=tk.NORMAL)
+                change_port_button.config(state=tk.NORMAL)
             except Exception as e:
                 print(f"An error occurred: {e}")
         except Exception as e:
